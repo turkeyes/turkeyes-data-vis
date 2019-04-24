@@ -68,6 +68,45 @@ def get_heatmap_for_coords(filename,coords,base_path,sigma=50,toplot=False):
     
     return res,im
 
+def get_processed_heatmap_for_import(filename, imdir, impdir):
+    
+    impdirname = filename.split('.')[0]
+    imfilename = os.path.join(imdir, filename)
+    impfilename = os.path.join(impdir, filename)
+    im = Image.open(imfilename).convert('RGB')
+    impim = np.asarray(Image.open(impfilename).convert('RGB').resize(im.size))[:,:,0]
+    
+    return impim, im
+
+def get_heatmap_for_import(filename, imdir, maskdir):
+    
+    check_img_type = lambda file: (lambda file: not file.startswith('.') or file.endswith('png') or file.endswith('jpg')
+                               or file.endswith('jpeg'))(file.lower())
+    get_heatmap_norm = lambda heatmap: (heatmap-np.min(heatmap))/float(np.max(heatmap)-np.min(heatmap))
+    maskfolder = os.path.join(maskdir, filename)
+    masknames = [file for file in os.listdir(maskfolder) if check_img_type(file)]
+    imfilename = os.path.join(imdir, filename)
+    im = Image.open(imfilename).convert('RGB')
+    width, height = im.size
+    temp = np.zeros([height,width], dtype=float)
+    for maskname in masknames:
+        maskfilename = os.path.join(maskfolder, maskname)
+        mask = np.asarray(Image.open(maskfilename).resize(im.size))
+        temp+=mask
+    
+    temp = get_heatmap_norm(temp)
+    
+    return temp, im
+
+def get_processed_heatmap_for_zoom(filename, imdir, impdir):
+    
+    impdirname = filename.split('.')[0]
+    imfilename = os.path.join(imdir, filename)
+    impim = np.load(os.path.join(impdir, impdirname, 'all_avg.npy'))
+    im = Image.open(imfilename).convert('RGB').resize(impim.shape[::-1])
+    
+    return impim, im
+
 def cc(s_map,gt_map):
     M1 = np.divide(s_map - np.mean(s_map), np.std(s_map))
     M2 = np.divide(gt_map - np.mean(gt_map), np.std(gt_map))

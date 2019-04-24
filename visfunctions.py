@@ -12,7 +12,7 @@ def to_rgb2(im):
     ret[:, :, :] = im[:, :, np.newaxis]
     return ret
 
-def spotlight(im,heatmap):
+def spotlight(im,heatmap,toplot=False):
     h=Image.fromarray(heatmap)
     h=h.resize(im.size)
     h=np.double(h)/255
@@ -46,6 +46,11 @@ def spotlight(im,heatmap):
     rgb[rgb>1]=1
     rgb_uint8 = (rgb * 255.999) .astype(np.uint8)
     z = Image.fromarray(rgb_uint8)
+    if toplot:
+        plt.figure(figsize=(20,20))
+        plt.imshow(z,vmin=0,vmax=1)
+        plt.axis('off')
+        plt.show()
     return z
 
 def heatmap_overlay(im,heatmap,colmap='hot'):
@@ -209,4 +214,27 @@ def spotlight_custom(im, heatmap, levels=3, most_salient_nlevel=3, mask_darkness
         plt.imshow(new_im,vmin=0,vmax=1)
         plt.axis('off')
         plt.show()
-    return new_im    
+    return new_im
+
+
+def plot_attention(filename, im, impim, plottype = 2):
+    # plottype:
+    # 1 for heatmap only
+    # 2 for heatmap overlay
+    # 3 for regular spotlight
+    # 4 for spotlight with level sets
+    fig, ax = plt.subplots(1, 1, figsize=(8,8))
+    if plottype==1:
+        ax.imshow(impim)
+    elif plottype==2:
+        transparent_heatmap(ax,im,impim)
+    elif plottype==3:
+        spotlight_res = spotlight(im,impim,toplot=False);
+        ax.imshow(spotlight_res); 
+    elif plottype==4:
+        spotlight_res = spotlight_custom(im,impim,toplot=False,percentile_based=False,levels=5,most_salient_nlevel=5,smoothness=0)
+        ax.imshow(spotlight_res); 
+        
+    ax.set_axis_off(); ax.set_title(filename);
+    
+    plt.show();
