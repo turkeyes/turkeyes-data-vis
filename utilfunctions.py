@@ -9,10 +9,12 @@ import scipy
 from scipy.ndimage.filters import gaussian_filter
 import math
 
-def get_heatmap_for_image(filename,D,base_path,sigma=50,toplot=False):
+def get_heatmap_for_image(filename,D,base_path,sigma=50,toplot=False, resize = None):
     
     imfilename = os.path.join(base_path, filename)
     im = Image.open(imfilename).convert('RGB')
+    if (not resize is None):
+        im = im.resize(resize)
     [width,height] = im.size
     
     temp = np.zeros([height,width])
