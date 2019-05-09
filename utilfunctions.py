@@ -13,14 +13,22 @@ def get_heatmap_for_image(filename,D,base_path,sigma=50,toplot=False, resize = N
     
     imfilename = os.path.join(base_path, filename)
     im = Image.open(imfilename).convert('RGB')
+
     if (not resize is None):
+        [width0,height0] = im.size
+        scaleF = max(width0/float(resize[0]),height0/float(resize[1]))
+        resize = [int(width0/scaleF),int(height0/scaleF)]
         im = im.resize(resize)
+        sigma = int(sigma/scaleF)
+        #print(sigma)
+
     [width,height] = im.size
     
     temp = np.zeros([height,width])
     for i in range(len(D)):
         coords = D[i]['coords']
-        temp[coords[1],coords[0]] += 1
+        if coords[1]<=height and coords[0]<=width:
+            temp[coords[1],coords[0]] += 1
         
     res = scipy.ndimage.filters.gaussian_filter(temp,[sigma,sigma]);
     
